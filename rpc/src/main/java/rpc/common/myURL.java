@@ -9,6 +9,21 @@ public class myURL implements Serializable {
     private String hostName;
     private Integer port;
 
+    private int initialWeight;
+    private int currentWeight;
+
+    public int getInitialWeight() {
+        return initialWeight;
+    }
+
+    public int getCurrentWeight() {
+        return currentWeight;
+    }
+
+    public void setCurrentWeight(int currentWeight) {
+        this.currentWeight = currentWeight;
+    }
+
     public String getHostName() {
         return hostName;
     }

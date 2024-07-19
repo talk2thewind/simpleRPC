@@ -65,11 +65,30 @@ public class RegistrationServer {
                 String requestBody = IOUtils.toString(is, StandardCharsets.UTF_8);
                 System.out.println("请求体内容: " + requestBody);
 
-                String interfaceClassName = requestBody.split(":")[1].replace("\"", "").replace("}", "").trim();
+                String[] requestParts = requestBody.split(":");
+                String interfaceClassName = requestParts[1].replace("\"", "").replace("}", "").trim();
+                String loadBalanceMethod = requestParts[0].replace("\"", "").replace("{", "").trim();
                 System.out.println("请求的服务接口类名: " + interfaceClassName);
+                System.out.println("指定的负载均衡方法: " + loadBalanceMethod);
 
                 List<myURL> urls = Register.getURLs(interfaceClassName);
-                myURL url = LoadBalance.roundRobin(urls); // 使用负载均衡轮询选择一个服务URL
+                myURL url = null;
+
+                switch (loadBalanceMethod) {
+                    case "roundRobin":
+                        url = LoadBalance.roundRobin(urls);
+                        break;
+                    case "random":
+                        url = LoadBalance.random(urls);
+                        break;
+                    case "weightedRoundRobin":
+                        url = LoadBalance.weightedRoundRobin(urls);
+                        break;
+                    default:
+                        System.out.println("未知的负载均衡方法: " + loadBalanceMethod);
+                        exchange.sendResponseHeaders(400, -1);
+                        return;
+                }
 
                 if (url != null) {
                     String response = url.toString();
@@ -88,6 +107,7 @@ public class RegistrationServer {
             }
         }
     }
+
 
     static class HeartbeatHandler implements HttpHandler {
         @Override
